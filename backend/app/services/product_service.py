@@ -19,8 +19,26 @@ def create_product(db: Session, product: ProductCreate):
 
     return db_product
 
-def get_products(db: Session):
-    return db.query(Product).all()
+def get_products(
+    db: Session,
+    page: int = 1,
+    limit: int = 10,
+    search: str | None = None,
+):
+
+    query = db.query(Product)
+
+    if search:
+        query = query.filter(
+            Product.name.ilike(f"%{search}%")
+        )
+
+    return (
+        query
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
     
 def get_product(db: Session, product_id: int):
     return db.query(Product).filter(Product.id == product_id).first()

@@ -21,17 +21,34 @@ def get_current_user(
         )
 
         username = payload.get("sub")
+        role = payload.get("role")
 
-        if username is None:
+        if username is None or role is None:
             raise HTTPException(
                 status_code=401,
                 detail="Token inválido"
             )
 
-        return username
+        return {
+            "username": username,
+            "role": role
+        }
 
     except JWTError:
         raise HTTPException(
             status_code=401,
             detail="Token inválido"
         )
+
+
+def require_admin(
+    current_user=Depends(get_current_user)
+):
+
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Solo los administradores pueden acceder"
+        )
+
+    return current_user
